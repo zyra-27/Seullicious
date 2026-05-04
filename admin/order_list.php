@@ -156,8 +156,8 @@ Order List
 
 <td>
 <?php
-if($o['table_number']){
-    echo "Meja " . $o['table_number'];
+if($o['meja']){
+    echo "Meja " . $o['meja'];
 } else {
     echo "-";
 }

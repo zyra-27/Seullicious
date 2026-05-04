@@ -54,6 +54,7 @@ td{
 padding:16px;
 font-size:15px;
 border-bottom:1px solid #f2f2f2;
+vertical-align: middle;
 }
 
 tr:hover{
@@ -83,6 +84,36 @@ background:#ffe8a3;
 color:#8a6500;
 }
 
+.process{
+background:#e3f0ff;
+color:#1565c0;
+}
+
+.action-buttons{
+display: flex;
+gap: 6px;
+flex-wrap: wrap;
+align-items: center;
+}
+
+.action-buttons a{
+text-decoration: none;
+}
+
+.btn-action{
+padding:6px 12px;
+border-radius:20px;
+font-size:12px;
+font-weight:600;
+display:inline-block;
+cursor:pointer;
+transition: opacity 0.2s;
+}
+
+.btn-action:hover{
+opacity: 0.8;
+}
+
 </style>
 
 </head>
@@ -101,7 +132,6 @@ Order List
 
 <thead>
 <tr>
-
 <th>ID</th>
 <th>Tanggal</th>
 <th>Type</th>
@@ -109,13 +139,12 @@ Order List
 <th>Total</th>
 <th>Payment</th>
 <th>Status</th>
-
 </tr>
 </thead>
 
 <tbody>
 
-<?php while($o=mysqli_fetch_assoc($data)){ ?>
+<?php while($o = mysqli_fetch_assoc($data)){ ?>
 
 <tr>
 
@@ -126,15 +155,13 @@ Order List
 <td><?php echo $o['order_type']; ?></td>
 
 <td>
-
 <?php
 if($o['table_number']){
-echo "Meja ".$o['table_number'];
-}else{
-echo "-";
+    echo "Meja " . $o['table_number'];
+} else {
+    echo "-";
 }
 ?>
-
 </td>
 
 <td class="price">
@@ -147,17 +174,33 @@ Rp <?php echo number_format($o['total']); ?>
 
 <td>
 
-<?php if($o['order_status']=="DONE"){ ?>
+<?php if($o['order_status'] == "DONE"){ ?>
 
-<span class="badge done">DONE</span>
+    <span class="badge done">✔ DONE</span>
 
-<?php } else { ?>
+<?php } elseif($o['order_status'] == "PROCESS"){ ?>
 
-<a href="../process/update_status.php?id=<?php echo $o['id_order']; ?>">
-<span class="badge new">NEW</span>
-</a>
+    <div class="action-buttons">
+        <span class="badge process">⏳ PROCESS</span>
+        <a href="../process/update_status.php?id=<?php echo $o['id_order']; ?>&status=DONE">
+            <span class="btn-action done">✔ Selesai</span>
+        </a>
+    </div>
+
+<?php } else { // NEW ?>
+
+    <div class="action-buttons">
+        <span class="badge new">NEW</span>
+        <a href="../process/update_status.php?id=<?php echo $o['id_order']; ?>&status=PROCESS">
+            <span class="btn-action process">⏳ Proses</span>
+        </a>
+        <a href="../process/update_status.php?id=<?php echo $o['id_order']; ?>&status=DONE">
+            <span class="btn-action done">✔ Selesai</span>
+        </a>
+    </div>
 
 <?php } ?>
+
 </td>
 
 </tr>

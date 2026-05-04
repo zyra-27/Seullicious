@@ -42,8 +42,8 @@ try{
     /* INSERT ke tabel orders — pakai id_user sesuai kolom di DB */
     $stmt = mysqli_prepare($koneksi,"
         INSERT INTO orders 
-        (id_user, total, order_type, meja, metode_bayar, jam_mulai, jam_selesai, order_status, tanggal)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'DONE', NOW())
+(id_user, total, order_type, meja, metode_bayar, jam_mulai, jam_selesai, order_status, tanggal)
+VALUES (?, ?, ?, ?, ?, ?, ?, 'NEW', NOW())
     ");
 
     mysqli_stmt_bind_param(

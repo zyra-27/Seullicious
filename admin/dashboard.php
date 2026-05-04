@@ -6,11 +6,11 @@ if(!isset($_SESSION['username'])){
     exit;
 }
 
-// Hanya admin yang boleh masuk
 if($_SESSION['status'] !== 'admin'){
     header("Location: ../auth/login.php");
     exit;
 }
+
 include "../config/koneksi.php";
 include "sidebar.php";
 
@@ -26,9 +26,13 @@ $total_revenue = mysqli_fetch_assoc($revenue)['total'];
 $menu = mysqli_query($koneksi,"SELECT COUNT(*) as total FROM menu");
 $total_menu = mysqli_fetch_assoc($menu)['total'];
 
-/* ACTIVE ORDERS */
-$active = mysqli_query($koneksi,"SELECT COUNT(*) as total FROM orders WHERE order_status='NEW'");
+/* ACTIVE ORDERS (NEW + PROCESS) */
+$active = mysqli_query($koneksi,"SELECT COUNT(*) as total FROM orders WHERE order_status IN ('NEW','PROCESS')");
 $active_orders = mysqli_fetch_assoc($active)['total'];
+
+/* IN PROCESS ORDERS */
+$proc = mysqli_query($koneksi,"SELECT COUNT(*) as total FROM orders WHERE order_status='PROCESS'");
+$process_orders = mysqli_fetch_assoc($proc)['total'];
 
 /* RECENT ORDERS */
 $recent = mysqli_query($koneksi,"SELECT * FROM orders ORDER BY id_order DESC LIMIT 5");
@@ -62,7 +66,7 @@ margin-bottom:30px;
 
 .cards{
 display:grid;
-grid-template-columns:repeat(4,1fr);
+grid-template-columns:repeat(5,1fr);
 gap:20px;
 margin-bottom:30px;
 }
@@ -84,6 +88,10 @@ font-size:28px;
 font-weight:700;
 margin-top:8px;
 color:#b88a44;
+}
+
+.card-value.process-val{
+color:#1565c0;
 }
 
 .table-card{
@@ -109,6 +117,7 @@ border-bottom:1px solid #eee;
 td{
 padding:15px;
 border-bottom:1px solid #f2f2f2;
+vertical-align: middle;
 }
 
 tr:hover{
@@ -120,6 +129,7 @@ padding:5px 12px;
 border-radius:20px;
 font-size:12px;
 font-weight:600;
+display:inline-block;
 }
 
 .done{
@@ -132,6 +142,11 @@ background:#ffe8a3;
 color:#8a6500;
 }
 
+.process{
+background:#e3f0ff;
+color:#1565c0;
+}
+
 </style>
 
 </head>
@@ -140,79 +155,78 @@ color:#8a6500;
 
 <div class="main">
 
-<div class="title">
-Dashboard
-</div>
+<div class="title">Dashboard</div>
 
 <div class="cards">
 
-<div class="card">
-<div class="card-title">Total Orders</div>
-<div class="card-value"><?php echo $total_orders ?></div>
-</div>
+    <div class="card">
+        <div class="card-title">Total Orders</div>
+        <div class="card-value"><?php echo $total_orders ?></div>
+    </div>
 
-<div class="card">
-<div class="card-title">Total Revenue</div>
-<div class="card-value">Rp <?php echo number_format($total_revenue) ?></div>
-</div>
+    <div class="card">
+        <div class="card-title">Total Revenue</div>
+        <div class="card-value">Rp <?php echo number_format($total_revenue) ?></div>
+    </div>
 
-<div class="card">
-<div class="card-title">Total Menu</div>
-<div class="card-value"><?php echo $total_menu ?></div>
-</div>
+    <div class="card">
+        <div class="card-title">Total Menu</div>
+        <div class="card-value"><?php echo $total_menu ?></div>
+    </div>
 
-<div class="card">
-<div class="card-title">Active Orders</div>
-<div class="card-value"><?php echo $active_orders ?></div>
-</div>
+    <div class="card">
+        <div class="card-title">Active Orders</div>
+        <div class="card-value"><?php echo $active_orders ?></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">In Process</div>
+        <div class="card-value process-val"><?php echo $process_orders ?></div>
+    </div>
 
 </div>
 
 <div class="table-card">
 
-<h3 style="margin-bottom:20px">Recent Orders</h3>
+    <h3 style="margin-bottom:20px">Recent Orders</h3>
 
-<table>
+    <table>
 
-<tr>
-<th>ID</th>
-<th>Tanggal</th>
-<th>Type</th>
-<th>Total</th>
-<th>Status</th>
-</tr>
+        <tr>
+            <th>ID</th>
+            <th>Tanggal</th>
+            <th>Type</th>
+            <th>Total</th>
+            <th>Status</th>
+        </tr>
 
-<?php while($r=mysqli_fetch_assoc($recent)){ ?>
+        <?php while($r = mysqli_fetch_assoc($recent)){ ?>
 
-<tr>
+        <tr>
 
-<td>#<?php echo $r['id_order'] ?></td>
+            <td>#<?php echo $r['id_order'] ?></td>
 
-<td><?php echo $r['created_at'] ?></td>
+            <td><?php echo $r['created_at'] ?></td>
 
-<td><?php echo $r['order_type'] ?></td>
+            <td><?php echo $r['order_type'] ?></td>
 
-<td>Rp <?php echo number_format($r['total']) ?></td>
+            <td>Rp <?php echo number_format($r['total']) ?></td>
 
-<td>
+            <td>
+                <?php if($r['order_status'] == "DONE"){ ?>
+                    <span class="badge done">✔ DONE</span>
+                <?php } elseif($r['order_status'] == "PROCESS"){ ?>
+                    <span class="badge process">⏳ PROCESS</span>
+                <?php } else { ?>
+                    <span class="badge new">NEW</span>
+                <?php } ?>
+            </td>
 
-<?php if($r['order_status']=="DONE"){ ?>
+        </tr>
 
-<span class="badge done">DONE</span>
+        <?php } ?>
 
-<?php } else { ?>
-
-<span class="badge new">NEW</span>
-
-<?php } ?>
-
-</td>
-
-</tr>
-
-<?php } ?>
-
-</table>
+    </table>
 
 </div>
 

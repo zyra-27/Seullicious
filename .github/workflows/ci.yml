@@ -1,0 +1,62 @@
+name: CI - PHP Syntax & Test Check
+
+# Kapan workflow ini dijalankan otomatis
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  php-check:
+    runs-on: ubuntu-latest
+
+    services:
+      # Menyediakan database MySQL sementara untuk keperluan testing
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: seullicious_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      # 1. Ambil kode dari repository
+      - name: Checkout kode
+        uses: actions/checkout@v4
+
+      # 2. Setup PHP
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mysqli, pdo_mysql
+
+      # 3. Cek syntax semua file PHP (paling dasar, cepat, dan berguna)
+      - name: Cek syntax PHP
+        run: |
+          find . -name "*.php" -print0 | xargs -0 -n1 php -l
+
+      # 4. (Opsional) Import struktur database untuk memastikan schema valid
+      - name: Import database schema (jika ada file .sql)
+        run: |
+          if [ -f "database/schema.sql" ]; then
+            mysql -h 127.0.0.1 -u root -proot seullicious_test < database/schema.sql
+          else
+            echo "Tidak ada file schema.sql, lewati langkah ini."
+          fi
+
+      # 5. (Opsional) Jalankan test otomatis jika sudah ada, misalnya dengan PHPUnit
+      - name: Jalankan test (jika ada)
+        run: |
+          if [ -f "vendor/bin/phpunit" ]; then
+            vendor/bin/phpunit
+          else
+            echo "Belum ada PHPUnit setup, lewati langkah ini."
+          fi
